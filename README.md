@@ -4,6 +4,8 @@ A self-healing streaming client that routes work across three simulated nodes, s
 
 Built for the Dizzaract AI Product Builder assignment. The focus is on engineering judgment — explicit state machine, offset-based recovery protocol, hot-path data kept out of React state, deterministic and reproducible failure simulation, and a layered architecture that keeps streaming logic, failover logic, metrics, and rendering strictly separated.
 
+**Live demo:** https://dizzaract-six.vercel.app
+
 ---
 
 ## Quick start
