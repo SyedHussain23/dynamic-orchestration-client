@@ -21,7 +21,7 @@ export default function App() {
           </h1>
         </div>
         <a
-          href="https://github.com/"
+          href="https://github.com/SyedHussain23/dynamic-orchestration-client"
           className="text-xs text-slate-400 hover:text-slate-200"
           target="_blank"
           rel="noreferrer"
