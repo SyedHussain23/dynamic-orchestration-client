@@ -1,0 +1,11 @@
+node_modules
+dist
+dist-ssr
+coverage
+.vite
+*.log
+.DS_Store
+.env
+.env.local
+.vercel
+INTERVIEW_NOTES.md
