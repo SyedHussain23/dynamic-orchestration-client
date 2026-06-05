@@ -73,12 +73,18 @@ export class FailoverManager {
     const now = this.cfg.now();
     const candidates: NodeHealth[] = [];
 
-    for (const h of this.health.values()) {
+    for (const [id, h] of this.health.entries()) {
       if (h.nodeId === excludeRecent) continue;
       if (h.circuit === 'open' && now < h.cooldownUntil) continue;
-      // Open circuits whose cooldown has elapsed are treated as half-open
-      // for selection purposes.
-      candidates.push(h);
+      // Open circuit whose cooldown has elapsed → promote to half-open so the
+      // type and UI accurately reflect the probe state.
+      if (h.circuit === 'open' && now >= h.cooldownUntil) {
+        const promoted = { ...h, circuit: 'half-open' as const };
+        this.health.set(id, promoted);
+        candidates.push(promoted);
+      } else {
+        candidates.push(h);
+      }
     }
 
     if (candidates.length === 0) {

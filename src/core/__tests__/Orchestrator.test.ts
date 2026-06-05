@@ -29,18 +29,6 @@ interface RunCapture {
   finalState: string;
 }
 
-async function runAndCapture(o: Orchestrator): Promise<RunCapture> {
-  const cap: RunCapture = {
-    chunks: [],
-    events: [],
-    nodesUsed: new Set(),
-    failovers: 0,
-    finalState: '',
-  };
-  await o.run('test');
-  return cap;
-}
-
 function capturingOrchestrator(nodes: NodeClient[], cfg: Record<string, unknown> = {}) {
   const cap: RunCapture = {
     chunks: [],

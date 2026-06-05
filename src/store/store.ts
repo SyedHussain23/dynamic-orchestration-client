@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { shallow } from 'zustand/shallow';
 import {
   LogEntry,
   MetricsSnapshot,
@@ -29,7 +28,6 @@ import {
 
 export interface StreamSlice {
   text: string;
-  tokensCommitted: number;
   state: OrchestratorState;
   activeNodeId: NodeId | null;
 }
@@ -54,7 +52,7 @@ export interface RootState {
 
   // Actions (mutations) — only called by the orchestrator binding layer
   // and the UI control bar. UI components should NOT mutate state directly.
-  _appendText: (text: string, tokens: number) => void;
+  _appendText: (text: string) => void;
   _setState: (s: OrchestratorState) => void;
   _setActiveNode: (id: NodeId | null) => void;
   _setNodeHealth: (id: NodeId, h: NodeHealth) => void;
@@ -73,18 +71,14 @@ const EMPTY_METRICS: MetricsSnapshot = {
 const MAX_LOG_ENTRIES = 500;
 
 export const useStore = create<RootState>((set) => ({
-  stream: { text: '', tokensCommitted: 0, state: 'idle', activeNodeId: null },
+  stream: { text: '', state: 'idle', activeNodeId: null },
   nodes: { health: {} as Record<NodeId, NodeHealth | undefined> },
   metrics: { snapshot: EMPTY_METRICS },
   logs: { entries: [] },
 
-  _appendText: (text, tokens) =>
+  _appendText: (text) =>
     set((s) => ({
-      stream: {
-        ...s.stream,
-        text: s.stream.text + text,
-        tokensCommitted: s.stream.tokensCommitted + tokens,
-      },
+      stream: { ...s.stream, text: s.stream.text + text },
     })),
 
   _setState: (st) =>
@@ -107,7 +101,7 @@ export const useStore = create<RootState>((set) => ({
 
   _reset: () =>
     set({
-      stream: { text: '', tokensCommitted: 0, state: 'idle', activeNodeId: null },
+      stream: { text: '', state: 'idle', activeNodeId: null },
       nodes: { health: {} as Record<NodeId, NodeHealth | undefined> },
       metrics: { snapshot: EMPTY_METRICS },
       logs: { entries: [] },
@@ -122,8 +116,6 @@ export const selectActiveNode = (s: RootState) => s.stream.activeNodeId;
 export const selectMetrics = (s: RootState) => s.metrics.snapshot;
 export const selectLogs = (s: RootState) => s.logs.entries;
 export const selectNodeHealth = (s: RootState) => s.nodes.health;
-
-export { shallow };
 
 // ─── Orchestrator binding ──────────────────────────────────────────────────
 
@@ -155,9 +147,8 @@ export function createBinding(opts: {
       // Concatenate once per frame — single set() call.
       let text = '';
       for (const c of buffer) text += (text.length ? ' ' : '') + c.text;
-      const tokens = buffer.length;
       buffer.length = 0;
-      useStore.getState()._appendText(text + (tokens > 0 ? ' ' : ''), tokens);
+      useStore.getState()._appendText(text + ' ');
     }
     // Sample metrics every frame regardless of buffer state.
     useStore.getState()._setMetrics(opts.getMetrics());
@@ -231,6 +222,9 @@ export function createBinding(opts: {
             level: 'info',
             message: `done on ${e.nodeId}`,
           });
+          // Stream finished naturally — stop the rAF loop so it doesn't
+          // run at 60Hz indefinitely after completion.
+          stopped = true;
           break;
         case 'failed':
           log({
@@ -239,6 +233,7 @@ export function createBinding(opts: {
             level: 'error',
             message: `failed: ${e.reason}`,
           });
+          stopped = true;
           break;
       }
     },
