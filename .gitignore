@@ -9,3 +9,13 @@ coverage
 .env.local
 .vercel
 INTERVIEW_NOTES.md
+
+# TypeScript build artifacts
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# Compiled JS outputs (source is TypeScript — JS files in src/ are build artifacts)
+src/**/*.js
+
+# Claude local config
+.claude/
