@@ -6,6 +6,8 @@ Built for the Dizzaract AI Product Builder assignment. The focus is on engineeri
 
 **Live demo:** https://dizzaract-six.vercel.app
 
+![Failover demo — node-a drops, node-b times out, node-c completes the stream without resetting UI state](docs/screenshot.png)
+
 ---
 
 ## Quick start
